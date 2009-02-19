@@ -861,6 +861,11 @@ sub monitor_child {
                 $account = "$meta{account}: ";
             }
 
+            my $tweet_msglevel = MSGLEVEL_PUBLIC;
+            if ( exists $twits{$meta{account}} ) {
+                $tweet_msglevel = Irssi::settings_get_level("own_tweets_level");
+            }
+
             my $marker = "";
             if (    $meta{type} ne 'dm'
                 and Irssi::settings_get_bool("twirssi_track_replies")
@@ -885,7 +890,7 @@ sub monitor_child {
             if ( $meta{type} =~ /tweet|reply/ ) {
                 push @lines,
                   [
-                    ( MSGLEVEL_PUBLIC | $hilight ),
+                    ( $tweet_msglevel | $hilight ),
                     $meta{type}, $account, $meta{nick}, $marker, $_
                   ];
             } elsif ( $meta{type} eq 'search' ) {
@@ -1149,6 +1154,7 @@ Irssi::settings_add_str( "twirssi", "twirssi_topic_color", "%r" );
 Irssi::settings_add_bool( "twirssi", "tweet_to_away",             0 );
 Irssi::settings_add_bool( "twirssi", "show_reply_context",        0 );
 Irssi::settings_add_bool( "twirssi", "show_own_tweets",           1 );
+Irssi::settings_add_level( "twirssi", "own_tweets_level",  "PUBLIC" );
 Irssi::settings_add_bool( "twirssi", "twirssi_debug",             0 );
 Irssi::settings_add_bool( "twirssi", "twirssi_first_run",         1 );
 Irssi::settings_add_bool( "twirssi", "twirssi_track_replies",     1 );
