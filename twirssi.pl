@@ -1179,6 +1179,7 @@ if ($window) {
     Irssi::command_bind( "tweet",                      "cmd_tweet" );
     Irssi::command_bind( "tweet_as",                   "cmd_tweet_as" );
     Irssi::command_bind( "twitter_reply",              "cmd_reply" );
+    Irssi::command_bind( "tweet_reply",                "cmd_reply" );
     Irssi::command_bind( "twitter_reply_as",           "cmd_reply_as" );
     Irssi::command_bind( "twitter_login",              "cmd_login" );
     Irssi::command_bind( "twitter_logout",             "cmd_logout" );
