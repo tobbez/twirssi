@@ -862,7 +862,7 @@ sub monitor_child {
             }
 
             my $tweet_msglevel = MSGLEVEL_PUBLIC;
-            if ( exists $twits{$meta{account}} ) {
+            if ( exists $twits{$meta{nick}} ) {
                 $tweet_msglevel = Irssi::settings_get_level("own_tweets_level");
             }
 
