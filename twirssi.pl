@@ -862,8 +862,15 @@ sub monitor_child {
             }
 
             my $tweet_msglevel = MSGLEVEL_PUBLIC;
-            if ( exists $twits{$meta{nick}} ) {
-                $tweet_msglevel = Irssi::settings_get_level("own_tweets_level");
+            my $tweet_timestamp = "";
+            if (    exists $twits{$meta{nick}} 
+                and not Irssi::settings_get_bool("act_on_own_tweets"))
+            {
+                $tweet_msglevel = MSGLEVEL_NEVER;
+                if ( Irssi::settings_get_bool("timestamps") ) {
+                    $tweet_timestamp =
+                        POSIX::strftime(Irssi::settings_get_str("timestamp_format") . " ", localtime);
+                }
             }
 
             my $marker = "";
@@ -891,7 +898,7 @@ sub monitor_child {
                 push @lines,
                   [
                     ( $tweet_msglevel | $hilight ),
-                    $meta{type}, $account, $meta{nick}, $marker, $_
+                    $meta{type}, $tweet_timestamp, $account, $meta{nick}, $marker, $_
                   ];
             } elsif ( $meta{type} eq 'search' ) {
                 push @lines,
@@ -1131,9 +1138,9 @@ Irssi::signal_add( "send text", "event_send_text" );
 
 Irssi::theme_register(
     [
-        'twirssi_tweet',  '[$0%B@$1%n$2] $3',
+        'twirssi_tweet',  '$0[$1%B@$2%n$3] $4',
         'twirssi_search', '[$0%r$1%n:%B@$2%n$3] $4',
-        'twirssi_reply',  '[$0\--> %B@$1%n$2] $3',
+        'twirssi_reply',  '$0[$1\--> %B@$2%n$3] $4',
         'twirssi_dm',     '[$0%r@$1%n (%WDM%n)] $2',
         'twirssi_error',  'ERROR: $0',
     ]
@@ -1154,7 +1161,7 @@ Irssi::settings_add_str( "twirssi", "twirssi_topic_color", "%r" );
 Irssi::settings_add_bool( "twirssi", "tweet_to_away",             0 );
 Irssi::settings_add_bool( "twirssi", "show_reply_context",        0 );
 Irssi::settings_add_bool( "twirssi", "show_own_tweets",           1 );
-Irssi::settings_add_level( "twirssi", "own_tweets_level",  "PUBLIC" );
+Irssi::settings_add_bool( "twirssi", "act_on_own_tweets",         0 );
 Irssi::settings_add_bool( "twirssi", "twirssi_debug",             0 );
 Irssi::settings_add_bool( "twirssi", "twirssi_first_run",         1 );
 Irssi::settings_add_bool( "twirssi", "twirssi_track_replies",     1 );
