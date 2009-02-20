@@ -1001,7 +1001,7 @@ sub monitor_child {
         Irssi::timeout_add_once( 5000, 'monitor_child',
             [ $filename, $attempt + 1 ] );
     } else {
-        print "Giving up on polling $filename" if &debug;
+        $window->print( "Giving up on polling $filename", MSGLEVEL_CLIENTCRAP) if &debug;
         unlink $filename unless &debug;
 
         return unless Irssi::settings_get_bool("twirssi_notify_timeouts");
