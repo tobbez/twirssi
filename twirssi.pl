@@ -7,6 +7,7 @@ use File::Temp;
 use LWP::Simple;
 use Data::Dumper;
 use Net::Twitter;
+use POSIX qw/strftime/;
 $Data::Dumper::Indent = 1;
 
 use vars qw($VERSION %IRSSI);
@@ -880,8 +881,9 @@ sub monitor_child {
             {
                 $tweet_msglevel = MSGLEVEL_NEVER;
                 if ( Irssi::settings_get_bool("timestamps") ) {
-                    $tweet_timestamp =
-                        POSIX::strftime(Irssi::settings_get_str("timestamp_format") . " ", localtime);
+                    $tweet_timestamp = strftime(
+                        Irssi::settings_get_str("timestamp_format") . " ",
+                        localtime );
                 }
             }
 
