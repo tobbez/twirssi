@@ -1086,7 +1086,7 @@ sub sig_complete {
     my ( $complist, $window, $word, $linestart, $want_space ) = @_;
 
     if (
-        $linestart =~ /^\/twitter_reply(?:_as)?\s*$/
+        $linestart =~ /^\/(?:twitter|tweet)_reply(?:_as)?\s*$/
         or ( Irssi::settings_get_bool("twirssi_use_reply_aliases")
             and $linestart =~ /^\/reply(?:_as)?\s*$/ )
       )
