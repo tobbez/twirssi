@@ -274,7 +274,7 @@ sub cmd_reply_as {
 
     my $away = &update_away($data);
 
-    &notice( "Update sent" . ( $away ? " (and away msg set)" : "" ) );
+    &notice( "Update sent" . ( $away ? " (and away msg set)" : "" ) ) if &debug;
 }
 
 sub gen_cmd {
