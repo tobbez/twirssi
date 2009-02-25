@@ -12,8 +12,8 @@ $Data::Dumper::Indent = 1;
 
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "2.1.0";
-my ($REV) = '$Rev: 489 $' =~ /(\d+)/;
+$VERSION = "2.1.1";
+my ($REV) = '$Rev: 494 $' =~ /(\d+)/;
 %IRSSI = (
     authors     => 'Dan Boger',
     contact     => 'zigdon@gmail.com',
@@ -22,7 +22,7 @@ my ($REV) = '$Rev: 489 $' =~ /(\d+)/;
       . 'Can optionally set your bitlbee /away message to same',
     license => 'GNU GPL v2',
     url     => 'http://twirssi.com',
-    changed => '$Date: 2009-02-24 17:04:58 -0800 (Tue, 24 Feb 2009) $',
+    changed => '$Date: 2009-02-25 15:20:08 -0800 (Wed, 25 Feb 2009) $',
 );
 
 my $window;
@@ -506,7 +506,7 @@ sub cmd_upgrade {
     }
 
     my $md5;
-    unless ($data) {
+    unless ( $data or Irssi::settings_get_bool("twirssi_upgrade_beta") ) {
         eval { use Digest::MD5; };
 
         if ($@) {
@@ -540,11 +540,14 @@ sub cmd_upgrade {
         }
     }
 
-    my $URL = "http://twirssi.com/twirssi.pl";
+    my $URL =
+      Irssi::settings_get_bool("twirssi_upgrade_beta")
+      ? "http://github.com/zigdon/twirssi/raw/master/twirssi.pl"
+      : "http://twirssi.com/twirssi.pl";
     &notice("Downloading twirssi from $URL");
     LWP::Simple::getstore( $URL, "$loc.upgrade" );
 
-    unless ($data) {
+    unless ( $data or Irssi::settings_get_bool("twirssi_upgrade_beta") ) {
         unless ( open( NEW, "$loc.upgrade" ) ) {
             &notice(
 "Failed to read $loc.upgrade.  Check that /set twirssi_location is set to the correct location."
@@ -866,6 +869,10 @@ sub monitor_child {
             }
 
             if ( not $meta{type} or $meta{type} ne 'searchid' ) {
+                if ( exists $meta{id} and exists $new_cache{ $meta{id} } ) {
+                    next;
+                }
+
                 $new_cache{ $meta{id} } = time;
 
                 if ( exists $meta{id} and exists $tweet_cache{ $meta{id} } ) {
@@ -925,7 +932,9 @@ sub monitor_child {
                     $meta{type}, $account, $meta{topic},
                     $meta{nick}, $marker,  $_
                   ];
-                if ( $meta{id} >
+                if (
+                    exists $id_map{__searches}{ $meta{account} }{ $meta{topic} }
+                    and $meta{id} >
                     $id_map{__searches}{ $meta{account} }{ $meta{topic} } )
                 {
                     $id_map{__searches}{ $meta{account} }{ $meta{topic} } =
@@ -939,7 +948,9 @@ sub monitor_child {
                   ];
             } elsif ( $meta{type} eq 'searchid' ) {
                 print "Search '$meta{topic}' returned id $meta{id}" if &debug;
-                if ( $meta{id} >=
+                if (
+                    exists $id_map{__searches}{ $meta{account} }{ $meta{topic} }
+                    and $meta{id} >=
                     $id_map{__searches}{ $meta{account} }{ $meta{topic} } )
                 {
                     $id_map{__searches}{ $meta{account} }{ $meta{topic} } =
@@ -1202,6 +1213,7 @@ Irssi::settings_add_str( "twirssi", "twirssi_replies_store",
     ".irssi/scripts/twirssi.json" );
 Irssi::settings_add_str( "twirssi", "twirssi_nick_color",  "%B" );
 Irssi::settings_add_str( "twirssi", "twirssi_topic_color", "%r" );
+Irssi::settings_add_bool( "twirssi", "twirssi_upgrade_beta",      0 );
 Irssi::settings_add_bool( "twirssi", "tweet_to_away",             0 );
 Irssi::settings_add_bool( "twirssi", "show_reply_context",        0 );
 Irssi::settings_add_bool( "twirssi", "show_own_tweets",           1 );
@@ -1305,6 +1317,7 @@ if ($window) {
                 my $num = keys %{ $id_map{__indexes} };
                 &notice( sprintf "Loaded old replies from %d contact%s.",
                     $num, ( $num == 1 ? "" : "s" ) );
+                &cmd_list_search;
             };
         } else {
             &notice("Failed to load old replies from $file: $!");
